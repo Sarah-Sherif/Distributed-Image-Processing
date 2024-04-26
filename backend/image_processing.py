@@ -1,36 +1,42 @@
 import cv2
 import numpy as np
-import cv2
-import matplotlib.pyplot as plt
 from rembg import remove
-from PIL import *
-import pytesseract
 import easyocr
-import pandas as pd
 
 
-def edge_detection(image):
+def edge_detection(image, threshold1=100, threshold2=200):
     """Return the edge map of the image."""
-    result = cv2.Canny(image=image, threshold1=threshold1, threshold2=threshold2, apertureSize=3, L2gradient=False)
+    result = cv2.Canny(image=image, threshold1=threshold1,
+                       threshold2=threshold2, apertureSize=3, L2gradient=False)
     return result
-    
 
 
 def corner_detection(image):
     """Return the image with the corners/interest points highlighted."""
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Detect corners using Harris Corner Detection
+    dst = cv2.cornerHarris(gray, blockSize=2, ksize=3, k=0.04)
+
+    # Threshold to highlight corners
+    dst = cv2.dilate(dst, None)
+    image[dst > 0.01 * dst.max()] = [0, 0, 255]  # Highlight corners in red
+
     return image
 
 
-def gaussian_blur(image):
+def gaussian_blur(image, kernel=5):
     """Return the blurred image."""
-    result = cv2.GaussianBlur(image, (kernel,kernel), 0)
+    result = cv2.GaussianBlur(image, (kernel, kernel), 0)
     return result
 
 
-def median_blur(image):
+def median_blur(image, kernel=5):
     """Return the blurred image"""
-    result = cv2.medianBlur(image,ksize=kernel)
+    result = cv2.medianBlur(image, ksize=kernel)
     return result
+
 
 def fourier_transform(image):
     """Return the centered fourier transform of the image."""
@@ -38,28 +44,28 @@ def fourier_transform(image):
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     else:
         gray_image = image
-    
+
     # Get the optimal size for the Fourier transform
     rows, cols = gray_image.shape
     m = cv2.getOptimalDFTSize(rows)
     n = cv2.getOptimalDFTSize(cols)
-    
+
     # Create a padded image for optimal Fourier transform
-    padded = cv2.copyMakeBorder(gray_image, 0, m - rows, 0, n - cols, cv2.BORDER_CONSTANT, value=0)
+    padded = cv2.copyMakeBorder(
+        gray_image, 0, m - rows, 0, n - cols, cv2.BORDER_CONSTANT, value=0)
 
     # Perform the Discrete Fourier Transform (DFT)
     dft = cv2.dft(np.float32(padded), flags=cv2.DFT_COMPLEX_OUTPUT)
-    
+
     # Shift the zero frequency component to the center
     dft_shift = np.fft.fftshift(dft)
 
     # Compute the magnitude and take the logarithm for better visualization
     magnitude_spectrum = cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1])
-    magnitude_spectrum = np.log(magnitude_spectrum + 1)  # Add 1 to avoid log(0)
-    
-    return magnitude_spectrum
+    magnitude_spectrum = np.log(
+        magnitude_spectrum + 1)  # Add 1 to avoid log(0)
 
-        
+    return magnitude_spectrum
 
 
 def contrast_enhancement(image):
@@ -69,39 +75,51 @@ def contrast_enhancement(image):
     equalized_image = cv2.equalizeHist(gray_image)
     # Original grayscale image
     return equalized_image
-   
-        
 
 
 def background_removal(image):
     """Return the image without its background."""
     result = remove(image)
     return result
-   
 
 
-def image_compression(image):
-    """Return the compressed image."""
-    image = cv2.imread("images.jpg")
-    # Save the image with JPEG compression, setting the quality (1-100, where 100 is the best quality and least compression)
-    compression_params = [int(cv2.IMWRITE_JPEG_QUALITY), 30]  # 30% quality for high compression
-    # Save to a new JPEG file
-    cv2.imwrite("images.jpg", image, compression_params)
-    return image
-
-
-def text_detection(image):
+def ocr(file):
     """Return a string with the text in the image."""
-    gray = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
-    noise=median_blur(gray,5)
-    thresh = cv2.threshold(noise, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+    image_bytes = file.read()
+    nparr = np.frombuffer(image_bytes, np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     reader = easyocr.Reader(['en'])
-    result = reader.readtext(image2,paragraph="False")
-    df=pd.DataFrame(result)
-    print(str(df[1]))
-    return image
+    result = reader.readtext(image, paragraph="False")
+    return result[-1][-1]
 
 
-def process_image(image, operation):
-    """return the result of the operation."""
-    return image
+def process_image(file, operation):
+    """Return the result of the operation."""
+    # Read image data as bytes
+    image_bytes = file.read()
+
+    # Convert image data to NumPy array
+    nparr = np.frombuffer(image_bytes, np.uint8)
+
+    # Decode the image
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    if (operation == "edge_detection"):
+        result = edge_detection(image)
+    elif (operation == "corner_detection"):
+        result = corner_detection(image)
+    elif (operation == "gaussian_blur"):
+        result = gaussian_blur(image)
+    elif (operation == "median_blur"):
+        result = median_blur(image)
+    elif (operation == "fourier_transform"):
+        result = fourier_transform(image)
+    elif (operation == "contrast_enhancement"):
+        result = contrast_enhancement(image)
+    elif (operation == "background_removal"):
+        result = background_removal(image)
+    else:
+        result = image
+    # Encode the image as JPEG
+    _, encoded_image = cv2.imencode('.png', result)
+    return encoded_image.tobytes()
