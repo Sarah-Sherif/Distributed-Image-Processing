@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from rembg import remove
-import easyocr
+# import easyocr
 
 
 def edge_detection(image, threshold1=100, threshold2=200):
@@ -83,14 +83,21 @@ def background_removal(image):
     return result
 
 
-def ocr(file):
-    """Return a string with the text in the image."""
-    image_bytes = file.read()
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    reader = easyocr.Reader(['en'])
-    result = reader.readtext(image, paragraph="False")
-    return result[-1][-1]
+def invert_image(image):
+    """Return the inverted image."""
+    inverted_image = cv2.bitwise_not(image)
+
+    return inverted_image
+
+
+# def ocr(file):
+#     """Return a string with the text in the image."""
+#     image_bytes = file.read()
+#     nparr = np.frombuffer(image_bytes, np.uint8)
+#     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+#     reader = easyocr.Reader(['en'])
+#     result = reader.readtext(image, paragraph="False")
+#     return result[-1][-1]
 
 
 def process_image(file, operation):
@@ -118,6 +125,8 @@ def process_image(file, operation):
         result = contrast_enhancement(image)
     elif (operation == "background_removal"):
         result = background_removal(image)
+    elif (operation == "color_inversion"):
+        result = invert_image(image)
     else:
         result = image
     # Encode the image as JPEG

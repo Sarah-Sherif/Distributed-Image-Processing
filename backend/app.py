@@ -1,5 +1,5 @@
 from flask import Flask, request, make_response
-from image_processing import process_image, ocr
+from image_processing import process_image
 
 app = Flask(__name__)
 
