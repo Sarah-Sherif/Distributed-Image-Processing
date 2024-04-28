@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Processing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="file"],
+    select {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+
+    .uploaded-image {
+      display: inline-block;
+      margin-right: 10px;
+      width: 20%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .uploaded-image:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <h2 style="text-align: center; margin-bottom: 20px;">Image Processing</h2>
+    <input type="file" name="images[]" accept="image/*" multiple>
+    <div id="imageFilters"></div>
+    <button type="submit"
+      style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+  </form>
+  <div id="uploadedImages" style="margin-top: 20px; text-align: center;"></div>
+
+  <script>
+    document.querySelector('input[type="file"]').addEventListener('change', function (event) {
+      var imageFiltersDiv = document.getElementById('imageFilters');
+      imageFiltersDiv.innerHTML = ''; // Clear previous inputs
+
+      var files = event.target.files;
+      for (var i = 0; i < files.length; i++) {
+        var select = document.createElement('select');
+        select.name = 'imageFilters[]';
+        select.style.display = 'block';
+        var options = ['edge_detection', 'Corner Detection', 'Gaussian Blur', 'Median Blur', 'Fourier Transform', 'Contrast Enhancement', 'Background Removal'];
+        for (var j = 0; j < options.length; j++) {
+          var option = document.createElement('option');
+          option.value = options[j];
+          option.text = options[j];
+          select.appendChild(option);
+        }
+        var placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.text = 'Please choose operation for Image ' + (i + 1);
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+        select.insertBefore(placeholderOption, select.firstChild);
+        imageFiltersDiv.appendChild(select);
+      }
+
+      // Display uploaded images
+      var uploadedImagesDiv = document.getElementById('uploadedImages');
+      uploadedImagesDiv.innerHTML = ''; // Clear previous images
+      for (var i = 0; i < files.length; i++) {
+        var image = document.createElement('img');
+        image.classList.add('uploaded-image');
+        image.src = URL.createObjectURL(files[i]);
+        uploadedImagesDiv.appendChild(image);
+      }
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent default form submission
+
+      var files = document.querySelector('input[type="file"]').files;
+      var selects = document.querySelectorAll('select[name="imageFilters[]"]');
+
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var operation = selects[i].value;
+
+        var formData = new FormData();
+        formData.append('image', file);
+        formData.append('operation', operation);
+
+        // Send request for each image-operation pair
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://192.168.1.3:5000/process-image', true);
+        xhr.responseType = 'blob'; // Set response type to Blob
+        xhr.onload = function () {
+          // Check if the request was successful
+          if (xhr.status === 200) {
+            // Create a new <img> element to display the received image
+            var receivedImage = document.createElement('img');
+
+            // Set the 'src' attribute of the <img> element to the URL of the received image
+            receivedImage.src = URL.createObjectURL(xhr.response);
+
+            // Replace the original image with the received image in the HTML
+            var uploadedImagesDivv = document.getElementById('uploadedImages');
+            uploadedImagesDiv.replaceChild(receivedImage, uploadedImagesDiv.children[i]);
+          } else {
+            // Handle errors if the request was not successful
+            console.error('Error: ' + xhr.statusText);
+          }
+        };
+        xhr.send(formData);
+      }
+    });
+  </script>
+</body>
+
+</html>
