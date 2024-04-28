@@ -21,14 +21,14 @@ def image_processing_endpoint():
     return response
 
 
-@app.post("/ocr")
-def ocr_endpoint():
-    """Take the image and apply ocr.
+# @app.post("/ocr")
+# def ocr_endpoint():
+#     """Take the image and apply ocr.
 
-    Returns:
-        PNG Image: Processed image.
-    """
-    image = request.files["image"]
-    result = ocr(image)
-    response = make_response(result)
-    return response
+#     Returns:
+#         PNG Image: Processed image.
+#     """
+#     image = request.files["image"]
+#     result = ocr(image)
+#     response = make_response(result)
+#     return response
