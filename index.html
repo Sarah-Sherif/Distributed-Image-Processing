@@ -26,6 +26,7 @@
     select {
       display: block;
       margin-bottom: 10px;
+      margin-left: -10px;
       width: 100%;
       padding: 10px;
       border: 1px solid #ccc;
@@ -94,10 +95,8 @@
         select.insertBefore(placeholderOption, select.firstChild);
         imageFiltersDiv.appendChild(select);
       }
-
-      // Display uploaded images
       let uploadedImagesDiv = document.getElementById('uploadedImages');
-      uploadedImagesDiv.innerHTML = ''; // Clear previous images
+      uploadedImagesDiv.innerHTML = '';
       for (let i = 0; i < files.length; i++) {
         let image = document.createElement('img');
         image.classList.add('uploaded-image');
@@ -143,10 +142,6 @@
               // Programmatically trigger a click event on the anchor to start the download
               a.click();
 
-              // Remove the anchor from the body
-              //document.body.removeChild(a);
-
-              // Revoke the temporary URL
               URL.revokeObjectURL(image_url);
             }
           } else {
