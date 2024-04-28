@@ -2,11 +2,6 @@
 
 # Update package lists
 sudo apt update
-sudo apt install -y python3-pip
-sudo apt install -y python3-venv
-
-# OpenCL related dependancies
-apt-get install ffmpeg libsm6 libxext6  -y
 
 # Install unzip (if not already installed)
 sudo apt install -y unzip
@@ -26,19 +21,11 @@ fi
 # Download code from S3
 echo "Downloading code from S3..."
 mkdir ~/work/Distributed-Image-Processing/backend
-aws s3 sync s3://code-directory ~/work/Distributed-Image-Processing/backend
+aws s3 sync s3://code-directory/backend ~/work/Distributed-Image-Processing/backend
 echo "Code downloaded successfully."
 
-# Go to backend directory and create virtual environment
-cd ~/work/Distributed-Image-Processing/backend
-python3 -m venv venv
+# Init the API
+echo "Initializing API..."
+chmod +x ~/work/Distributed-Image-Processing/backend/init_server.bash
+~/work/Distributed-Image-Processing/backend/init_server.bash
 
-# Activate virtual environment
-source venv/bin/activate
-
-# Install dependencies
-pip3 install -r requirements.txt
-pip3 install gunicorn
-
-# Start the server
-gunicorn -w 4 -b 0.0.0.0 app:app
