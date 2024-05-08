@@ -123,7 +123,7 @@
 
         // Send request for each image-operation pair
         let xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://192.168.1.3:5000/process-image', true);
+        xhr.open('POST', 'http://13.60.33.59:8000/process-image', true);
         xhr.responseType = 'blob'; // Set response type to Blob
         xhr.onload = function () {
           console.log(xhr);
@@ -131,7 +131,7 @@
             if (xhr.response) {
               image_url = URL.createObjectURL(xhr.response);
 
-              // Create a new anchor elemen
+              // Create a new anchor element
               let a = document.createElement('a');
               a.href = image_url;
               a.download = `image ${i + 1}`;

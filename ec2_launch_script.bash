@@ -20,12 +20,17 @@ fi
 
 # Download code from S3
 echo "Downloading code from S3..."
-mkdir ~/work/Distributed-Image-Processing/backend
-aws s3 sync s3://code-directory/backend ~/work/Distributed-Image-Processing/backend
+mkdir /home/ubuntu/work/Distributed-Image-Processing/backend
+aws s3 cp s3://code-directory/ /home/ubuntu/work/Distributed-Image-Processing/ --recursive
 echo "Code downloaded successfully."
 
+# Init Apache
+echo "Initializing Apache..."
+chmod +x /home/ubuntu/work/Distributed-Image-Processing/init_apache.bash
+/home/ubuntu/work/Distributed-Image-Processing/init_apache.bash
+
 # Init the API
-echo "Initializing API..."
-chmod +x ~/work/Distributed-Image-Processing/backend/init_server.bash
-~/work/Distributed-Image-Processing/backend/init_server.bash
+echo "Initializing WSGI server..."
+chmod +x /home/ubuntu/work/Distributed-Image-Processing/init_server.bash
+/home/ubuntu/work/Distributed-Image-Processing/init_server.bash
 
