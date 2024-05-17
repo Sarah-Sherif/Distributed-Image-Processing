@@ -1,3 +1,5 @@
+# !/bin/bash
+
 # update the code
 sudo aws s3 cp s3://code-directory/ /home/ubuntu/work/Distributed-Image-Processing/ --recursive
 

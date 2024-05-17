@@ -78,7 +78,7 @@ document
 
 			function sendRequest() {
 				fetch(
-					"http://Web-app-and-server-413737600.eu-north-1.elb.amazonaws.com:8000/process-image",
+					"http://application-and-web-server-LB-570742999.eu-north-1.elb.amazonaws.com:8000/process-image",
 					{
 						method: "POST",
 						body: formData,
