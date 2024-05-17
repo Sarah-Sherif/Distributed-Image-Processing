@@ -6,6 +6,7 @@ const operation_name_map = {
 	"Fourier Transform": "fourier_transform",
 	"Contrast Enhancement": "contrast_enhancement",
 	"Background Removal": "background_removal",
+	"Color Inversion": "color_inversion",
 };
 
 document
@@ -27,6 +28,8 @@ document
 				"Fourier Transform",
 				"Contrast Enhancement",
 				"Background Removal",
+				"Color Inversion",
+				"All Operations",
 			];
 			for (let j = 0; j < options.length; j++) {
 				let option = document.createElement("option");
@@ -43,6 +46,7 @@ document
 			select.insertBefore(placeholderOption, select.firstChild);
 			imageFiltersDiv.appendChild(select);
 		}
+
 		let uploadedImagesDiv = document.getElementById("uploadedImages");
 		uploadedImagesDiv.innerHTML = "";
 		for (let i = 0; i < files.length; i++) {
@@ -52,9 +56,6 @@ document
 			uploadedImagesDiv.appendChild(image);
 		}
 	});
-
-let requestCount = 0;
-const REQUEST_Number = 3;
 
 document
 	.getElementById("uploadForm")
@@ -69,56 +70,61 @@ document
 		Array.from(files).forEach((file, i) => {
 			let operation = selects[i].value;
 
-			let formData = new FormData();
-			formData.append("image", file);
-			formData.append("operation", operation_name_map[operation]);
-
-			const REQUEST_NUMBER = 3; // Number of retry attempts
-			let requestCount = 0; // Counter for the number of requests made
-
-			function sendRequest() {
-				fetch(
-					"http://application-and-web-server-LB-570742999.eu-north-1.elb.amazonaws.com:8000/process-image",
-					{
-						method: "POST",
-						body: formData,
+			if (operation === "All Operations") {
+				Object.keys(operation_name_map).forEach((key) => {
+					if (key !== "Background Removal") {
+						sendRequest(file, operation_name_map[key], i);
 					}
-				)
-					.then((response) => {
-						if (!response.ok) {
-							throw new Error("Network response was not ok");
-						}
-						return response.blob();
-					})
-					.then((blob) => {
-						let image_url = URL.createObjectURL(blob);
-						let a = document.createElement("a");
-						a.href = image_url;
-						a.download = `image ${i + 1} ${operation}`;
-						document.body.appendChild(a);
-						a.click();
-						URL.revokeObjectURL(image_url);
-					})
-					.catch((error) => {
-						requestCount++;
-						if (requestCount < REQUEST_NUMBER) {
-							// Retry the request
-							sendRequest();
-						} else {
-							// Display error message to user screen
-							alert(
-								"Processing Image number " +
-									Number(i + 1) +
-									" Failed"
-							);
-						}
-					});
+				});
+			} else {
+				sendRequest(file, operation_name_map[operation], i);
 			}
-
-			// Call the sendRequest function to initiate the request
-			sendRequest();
-
-			// Reset the counter after submitting the form
-			requestCount = 0;
 		});
 	});
+
+function sendRequest(file, operation, index) {
+	let formData = new FormData();
+	formData.append("image", file);
+	formData.append("operation", operation);
+
+	const REQUEST_NUMBER = 3; // Number of retry attempts
+	let requestCount = 0; // Counter for the number of requests made
+
+	function makeRequest() {
+		fetch(
+			"http://application-and-web-server-LB-570742999.eu-north-1.elb.amazonaws.com:8000/process-image",
+			{
+				method: "POST",
+				body: formData,
+			}
+		)
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error("Network response was not ok");
+				}
+				return response.blob();
+			})
+			.then((blob) => {
+				let image_url = URL.createObjectURL(blob);
+				let a = document.createElement("a");
+				a.href = image_url;
+				a.download = `image ${index + 1} ${operation}`;
+				document.body.appendChild(a);
+				a.click();
+				URL.revokeObjectURL(image_url);
+			})
+			.catch((error) => {
+				requestCount++;
+				if (requestCount < REQUEST_NUMBER) {
+					// Retry the request
+					makeRequest();
+				} else {
+					// Display error message to user screen
+					alert("Processing Image number " + (index + 1) + " Failed");
+				}
+			});
+	}
+
+	// Call the makeRequest function to initiate the request
+	makeRequest();
+}
