@@ -8,7 +8,8 @@ CORS(app)
 
 @app.post("/process-image")
 def image_processing_endpoint():
-    """Take the image and the operation.
+    """
+    Take the image and the operation.
 
     Returns:
         PNG Image: Processed image.
