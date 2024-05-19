@@ -7,9 +7,11 @@ This system consists of a simple web interface and a distributed API that can ha
 
 The system was entirely developed on the AWS free tier with no additional charges.  
 
+Here is a [video demonstration](https://drive.google.com/file/d/15-1gsSUfRz_P8EkznLFlMcaZfxNMfjrw/view?usp=drive_link) of the system.
+
 Feel free to explore the repo :).  
 Find the server and the image processing code at the backend directory.  
 Find the frontend and the client side middleware in the frontend directory.  
 Find the scripts used to initialize the EC2 instances in the scripts directory.  
 Find the API testing reports at the API testing reports directory.  
-All the system development details are documented in the report [here](https://github.com/mina58/Distributed-Image-Processing/blob/mainDistributed%20Computing%20Report.pdf)  
+All the system development details are documented in the report [here](https://github.com/mina58/Distributed-Image-Processing/blob/mainDistributed%20Computing%20Report.pdf).  
